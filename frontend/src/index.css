@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens. Every colour is an HSL triplet so Tailwind can apply opacity modifiers. */
+@layer base {
+  :root {
+    --background: 180 20% 98%;
+    --foreground: 200 25% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 25% 14%;
+    --primary: 175 77% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 175 45% 94%;
+    --muted: 180 14% 94%;
+    --muted-foreground: 200 10% 38%;
+    --accent: 175 40% 92%;
+    --accent-foreground: 175 77% 18%;
+    --border: 180 12% 88%;
+    --ring: 175 77% 26%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --metric-water: 205 85% 48%;
+    --metric-sleep: 252 70% 60%;
+    --metric-activity: 152 60% 36%;
+    --metric-mood: 35 92% 46%;
+    --warm: 24 95% 53%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 200 25% 8%;
+    --foreground: 180 10% 93%;
+    --card: 200 22% 11%;
+    --card-foreground: 180 10% 93%;
+    --primary: 172 66% 42%;
+    --primary-foreground: 200 25% 8%;
+    --primary-soft: 175 30% 15%;
+    --muted: 200 15% 15%;
+    --muted-foreground: 190 8% 66%;
+    --accent: 175 25% 17%;
+    --accent-foreground: 175 50% 85%;
+    --border: 200 15% 20%;
+    --ring: 172 66% 42%;
+    --destructive: 0 62% 55%;
+    --metric-water: 205 90% 62%;
+    --metric-sleep: 252 85% 72%;
+    --metric-activity: 152 55% 52%;
+    --metric-mood: 38 92% 58%;
+    --warm: 24 95% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}

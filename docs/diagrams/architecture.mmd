@@ -1,0 +1,24 @@
+flowchart LR
+  user([Browser])
+  subgraph edge[Edge]
+    fe["Frontend<br/>React + nginx"]
+    gw["API Gateway<br/>rate limit · CORS · JWT check"]
+  end
+  subgraph svc[Services]
+    auth["auth-service<br/>accounts · JWT"]
+    habits["habits-service<br/>entries · goals · streaks"]
+    chat["chat-service<br/>conversations · AI streaming"]
+  end
+  db[("PostgreSQL<br/>auth_svc · habits_svc · chat_svc")]
+  ai{{"AI provider<br/>Anthropic / OpenAI-compatible"}}
+
+  user --> fe
+  fe -- "/api/*" --> gw
+  gw --> auth
+  gw --> habits
+  gw --> chat
+  chat -. "internal summary<br/>(x-internal-key)" .-> habits
+  chat -- "streamed completion" --> ai
+  auth --> db
+  habits --> db
+  chat --> db

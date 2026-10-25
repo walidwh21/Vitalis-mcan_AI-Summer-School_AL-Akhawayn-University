@@ -1,0 +1,12 @@
+{
+  "name": "vitalis",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Wellness companion: habit tracking, weekly insights and an AI chat assistant.",
+  "scripts": {
+    "install:all": "npm install --prefix frontend && npm install --prefix services/gateway && npm install --prefix services/auth-service && npm install --prefix services/habits-service && npm install --prefix services/chat-service",
+    "test": "npm test --prefix frontend && npm test --prefix services/habits-service && npm test --prefix services/chat-service",
+    "typecheck": "npm run typecheck --prefix frontend && npm run typecheck --prefix services/gateway && npm run typecheck --prefix services/auth-service && npm run typecheck --prefix services/habits-service && npm run typecheck --prefix services/chat-service",
+    "screenshots": "node scripts/screenshots.mjs"
+  }
+}

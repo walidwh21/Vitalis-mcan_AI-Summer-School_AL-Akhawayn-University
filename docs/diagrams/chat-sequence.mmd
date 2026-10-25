@@ -1,0 +1,26 @@
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant FE as Frontend
+  participant GW as Gateway
+  participant CH as chat-service
+  participant HB as habits-service
+  participant AI as AI provider
+
+  U->>FE: Types a message
+  FE->>GW: POST /api/chat/conversations/:id/messages
+  GW->>GW: Verify JWT, apply rate limit
+  GW->>CH: Forward request (SSE)
+  CH->>CH: Validate, store user message, screen for crisis language
+  opt "Use my habit data" enabled
+    CH->>HB: GET /internal/users/:id/summary
+    HB-->>CH: 7-day averages, streak
+  end
+  CH->>AI: Stream request (system prompt + recent history)
+  loop For each text chunk
+    AI-->>CH: delta
+    CH-->>FE: event: delta
+    FE-->>U: Reply grows in place
+  end
+  CH->>CH: Store assistant message
+  CH-->>FE: event: done

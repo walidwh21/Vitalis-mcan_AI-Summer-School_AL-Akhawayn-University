@@ -1,0 +1,101 @@
+name: vitalis
+
+x-service-env: &service-env
+  DATABASE_URL: postgresql://${POSTGRES_USER:-vitalis}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-vitalis}
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -hex 32)}
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Set INTERNAL_API_KEY in .env (openssl rand -hex 24)}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+x-healthcheck: &healthcheck
+  interval: 10s
+  timeout: 3s
+  retries: 8
+  start_period: 10s
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vitalis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-vitalis}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-service:
+    build: ./services/auth-service
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "wget", "-qO-", "http://localhost:4001/health"]
+
+  habits-service:
+    build: ./services/habits-service
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "wget", "-qO-", "http://localhost:4002/health"]
+
+  chat-service:
+    build: ./services/chat-service
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+      HABITS_SERVICE_URL: http://habits-service:4002
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MAX_TOKENS: ${AI_MAX_TOKENS:-600}
+    depends_on:
+      db: { condition: service_healthy }
+      habits-service: { condition: service_healthy }
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "wget", "-qO-", "http://localhost:4003/health"]
+
+  gateway:
+    build: ./services/gateway
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      AUTH_SERVICE_URL: http://auth-service:4001
+      HABITS_SERVICE_URL: http://habits-service:4002
+      CHAT_SERVICE_URL: http://chat-service:4003
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-service: { condition: service_healthy }
+      habits-service: { condition: service_healthy }
+      chat-service: { condition: service_healthy }
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway: { condition: service_healthy }
+
+volumes:
+  db-data:

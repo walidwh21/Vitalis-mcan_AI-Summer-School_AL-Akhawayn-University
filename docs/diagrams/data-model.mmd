@@ -1,0 +1,42 @@
+erDiagram
+  USERS ||--o{ ENTRIES : "logs (by user_id)"
+  USERS ||--o| GOALS : "sets (by user_id)"
+  USERS ||--o{ CONVERSATIONS : "owns (by user_id)"
+  CONVERSATIONS ||--o{ MESSAGES : contains
+
+  USERS {
+    uuid id PK
+    text email "unique, case-insensitive"
+    text password_hash
+    text full_name
+    text locale "en | fr | ar"
+  }
+  ENTRIES {
+    uuid id PK
+    uuid user_id
+    date entry_date "unique per user"
+    text mood "very_low..great"
+    int water_glasses
+    numeric sleep_hours
+    int activity_minutes
+  }
+  GOALS {
+    uuid user_id PK
+    int water_glasses
+    numeric sleep_hours
+    int activity_minutes
+  }
+  CONVERSATIONS {
+    uuid id PK
+    uuid user_id
+    text title
+    timestamptz updated_at
+  }
+  MESSAGES {
+    uuid id PK
+    bigint seq "strict ordering"
+    uuid conversation_id FK
+    text role "user | assistant"
+    text content
+    text feedback "helpful | not_helpful"
+  }
