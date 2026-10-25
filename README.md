@@ -71,7 +71,7 @@ Design notes:
 Requirements: Docker with Compose v2
 
 ```bash
-git clone <your-repo-url> vitalis && cd vitalis
+git clone https://github.com/walidwh21/Vitalis-mcan_AI-Summer-School_AL-Akhawayn-University.git vitalis && cd vitalis
 cp .env.example .env
 ```
 
